@@ -1,0 +1,3 @@
+interface:
+  display_name: "Supabase"
+  short_description: "Supabase workflows with project security rules"

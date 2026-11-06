@@ -1,0 +1,3 @@
+interface:
+  display_name: "Tailwind Design System"
+  short_description: "Tailwind v4 tokens, components, and theming"

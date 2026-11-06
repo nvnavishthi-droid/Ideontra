@@ -1,0 +1,47 @@
+-- 04-policies-triggers.sql — Data-free verified Supabase schema snapshot, 2026-11-05.
+INSERT INTO storage.buckets(id,name,public,file_size_limit,allowed_mime_types) VALUES ('idea-demos','idea-demos',false,104857600,ARRAY['video/mp4','video/quicktime','video/webm']) ON CONFLICT(id) DO NOTHING;
+CREATE POLICY "idea_demo_read" ON storage.objects FOR SELECT TO authenticated USING (((bucket_id = 'idea-demos'::text) AND ( SELECT can_access_idea_demo(objects.name, false) AS can_access_idea_demo))) ;
+CREATE POLICY "idea_demo_upload" ON storage.objects FOR INSERT TO authenticated  WITH CHECK (((bucket_id = 'idea-demos'::text) AND ( SELECT can_access_idea_demo(objects.name, true) AS can_access_idea_demo)));
+CREATE POLICY "ideontra_receive_broadcast" ON realtime.messages FOR SELECT TO authenticated USING (((extension = 'broadcast'::text) AND (( SELECT is_member() AS is_member) OR ( SELECT is_admin() AS is_admin)) AND ((( SELECT realtime.topic() AS topic) = 'ideas:public'::text) OR (( SELECT realtime.topic() AS topic) = ('user:'::text || (( SELECT auth.uid() AS uid))::text)) OR ((( SELECT realtime.topic() AS topic) = 'admin:ideas'::text) AND ( SELECT is_admin() AS is_admin))))) ;
+CREATE POLICY "follows_self" ON public.idea_followers FOR SELECT TO authenticated USING ((user_id = ( SELECT auth.uid() AS uid))) ;
+CREATE POLICY "private_details_self" ON public.idea_private_details FOR SELECT TO authenticated USING ((submitter_id = ( SELECT auth.uid() AS uid))) ;
+CREATE POLICY "audit_log_admin_read" ON public.audit_log FOR SELECT TO authenticated USING (( SELECT is_admin() AS is_admin)) ;
+CREATE POLICY "ideas_visible" ON public.ideas FOR SELECT TO authenticated USING (((status <> 'Draft'::text) OR (EXISTS ( SELECT 1
+   FROM idea_private_details d
+  WHERE ((d.idea_id = ideas.id) AND (d.submitter_id = ( SELECT auth.uid() AS uid))))))) ;
+CREATE POLICY "profiles_self_or_admin" ON public.profiles FOR SELECT TO authenticated USING (((id = ( SELECT auth.uid() AS uid)) OR ( SELECT is_admin() AS is_admin))) ;
+GRANT SELECT (action) ON public.audit_log TO authenticated;
+GRANT SELECT (actor_id) ON public.audit_log TO authenticated;
+GRANT SELECT (created_at) ON public.idea_followers TO authenticated;
+GRANT SELECT (created_at) ON public.profiles TO authenticated;
+GRANT SELECT (details) ON public.audit_log TO authenticated;
+GRANT SELECT (email) ON public.profiles TO authenticated;
+GRANT SELECT (full_name) ON public.profiles TO authenticated;
+GRANT SELECT (id) ON public.audit_log TO authenticated;
+GRANT SELECT (id) ON public.idea_followers TO authenticated;
+GRANT SELECT (id) ON public.profiles TO authenticated;
+GRANT SELECT (idea_id) ON public.audit_log TO authenticated;
+GRANT SELECT (idea_id) ON public.idea_followers TO authenticated;
+GRANT SELECT (idea_id) ON public.idea_private_details TO authenticated;
+GRANT SELECT (occurred_at) ON public.audit_log TO authenticated;
+GRANT SELECT (role) ON public.profiles TO authenticated;
+GRANT SELECT (submitter_id) ON public.idea_private_details TO authenticated;
+GRANT SELECT (user_id) ON public.idea_followers TO authenticated;
+CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+CREATE TRIGGER sync_profile_email_after_auth_update AFTER UPDATE OF email ON auth.users FOR EACH ROW EXECUTE FUNCTION sync_profile_email();
+CREATE TRIGGER guard_idea_workflow BEFORE INSERT OR DELETE OR UPDATE ON public.ideas FOR EACH ROW EXECUTE FUNCTION guard_workflow_write();
+CREATE TRIGGER guard_status_history BEFORE INSERT OR DELETE OR UPDATE ON public.idea_status_history FOR EACH ROW EXECUTE FUNCTION guard_workflow_write();
+CREATE TRIGGER guard_owner_history BEFORE INSERT OR DELETE OR UPDATE ON public.idea_owner_history FOR EACH ROW EXECUTE FUNCTION guard_workflow_write();
+CREATE TRIGGER guard_audit_log BEFORE INSERT OR DELETE OR UPDATE ON public.audit_log FOR EACH ROW EXECUTE FUNCTION guard_workflow_write();
+CREATE TRIGGER audit_idea_changes AFTER INSERT OR DELETE OR UPDATE ON public.ideas FOR EACH ROW EXECUTE FUNCTION audit_idea_write();
+CREATE TRIGGER audit_comment_deletion AFTER DELETE ON public.idea_comments FOR EACH ROW EXECUTE FUNCTION audit_comment_delete();
+CREATE TRIGGER enforce_employee_email_before_auth_write BEFORE INSERT OR UPDATE OF email ON auth.users FOR EACH ROW EXECUTE FUNCTION enforce_employee_email();
+CREATE TRIGGER validate_idea_links BEFORE INSERT OR UPDATE OF links ON public.ideas FOR EACH ROW EXECUTE FUNCTION validate_idea_links();
+CREATE TRIGGER broadcast_idea_event AFTER INSERT OR DELETE OR UPDATE ON public.ideas FOR EACH ROW EXECUTE FUNCTION broadcast_idea_event();
+CREATE TRIGGER broadcast_idea_event AFTER INSERT OR DELETE OR UPDATE ON public.idea_private_details FOR EACH ROW EXECUTE FUNCTION broadcast_idea_event();
+CREATE TRIGGER broadcast_idea_event AFTER INSERT OR DELETE OR UPDATE ON public.idea_votes FOR EACH ROW EXECUTE FUNCTION broadcast_idea_event();
+CREATE TRIGGER broadcast_idea_event AFTER INSERT OR DELETE OR UPDATE ON public.idea_comments FOR EACH ROW EXECUTE FUNCTION broadcast_idea_event();
+CREATE TRIGGER broadcast_idea_event AFTER INSERT OR DELETE OR UPDATE ON public.idea_followers FOR EACH ROW EXECUTE FUNCTION broadcast_idea_event();
+CREATE TRIGGER broadcast_idea_event AFTER INSERT OR DELETE OR UPDATE ON public.idea_status_history FOR EACH ROW EXECUTE FUNCTION broadcast_idea_event();
+CREATE TRIGGER broadcast_idea_event AFTER INSERT OR DELETE OR UPDATE ON public.idea_owner_history FOR EACH ROW EXECUTE FUNCTION broadcast_idea_event();
+CREATE TRIGGER broadcast_idea_event AFTER INSERT OR DELETE OR UPDATE ON public.idea_progress_updates FOR EACH ROW EXECUTE FUNCTION broadcast_idea_event();
