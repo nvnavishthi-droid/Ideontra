@@ -340,3 +340,54 @@ compact horizontal row; filters stay visible. At unusually short heights control
 remain reachable via a bounded control scroller. Pencil frames depict the fixed
 viewport and result scroll boundary; canvas itself has no interactive scrolling.
 This supersedes the earlier initial document-scroll design and is reversible.
+
+## 2026-11-06 — Query-driven partial indexes
+
+Add partial indexes for undeleted comment counts and In Progress target dates,
+matching get_idea_summary/get_admin_dashboard predicates. Retain all existing FK,
+search and ordering indexes; indexing every column would duplicate coverage.
+Small current tables do not establish a measurable speedup; these support growing
+counts with narrower indexes. Reversible by dropping only the two added indexes.
+Supabase CLI is absent: save the MCP-assigned migration version after application
+instead of inventing a timestamp or installing a new tool. No query/RLS changes.
+
+## 2026-11-06 — Immediate dashboard control feedback
+
+Use supported native History API navigation and a private GET data endpoint,
+retaining existing server identity checks and database filtering. TanStack caches
+normalized user/role/URL query keys for 60 seconds; preload only the next result
+page, and invalidate after writes/Broadcast events. Uncached selections show a
+skeleton rather than old rows under new filters. This avoids repeated RSC work
+and serialized server actions while preserving deep links and manual tables.
+Do not weaken authentication or optimistically confirm writes. Reversible through
+the shared navigation/data layer; no dependencies or database changes required.
+
+Pin Vercel Functions to bom1 for database proximity, rather than relying on the
+platform default region. This is reversible in vercel.json and takes effect on
+redeployment; no production latency improvement is claimed before that test.
+Reference: https://vercel.com/docs/regions (bom1 maps to ap-south-1/Mumbai).
+Disable Next.js development Server Function argument logging, which otherwise
+prints authentication inputs during QA. Request timing logs remain available.
+
+## 2026-11-06 — Skeleton loading coverage
+
+Replace generic missing-data spinners with shared silhouettes matching each
+existing surface. Initial dashboard uses the default board silhouette until URL
+data resolves; auth uses a form silhouette. Owner loading replaces only the
+40px control, preventing extra vertical space. Preserve cached data and mutation
+button spinners. Use no timers or new animation dependencies; reversible shared
+presentation changes. Existing workflow, RLS and request timing are unchanged.
+
+## 2026-11-06 — Dashboard interaction corrections
+
+User requests whole-card/row details, read-only card vote/comment counts, no table
+Action column, board/list/sort for all idea views, all statuses and hidden deleted
+threads including replies. Vote/Follow in details stay functional; Admin Overview
+keeps its summary. Use a stretched native card button with an independent overflow
+menu, and keyboard-focusable table rows. Show nine public columns and include Draft
+in My Ideas; existing database author-only visibility still governs drafts. Preserve
+server paging/filtering. Review defaults oldest-first but explicit sorts round-trip
+to the RPC. Hide deleted branches in detail projections and summary counts, keeping
+tombstones/audit records. These reversible presentation/read-contract choices avoid
+hard deletion, client filtering and fake controls; supersede prior placeholders and
+six active columns. Details: docs/dashboard-interactions.md.

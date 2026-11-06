@@ -5,4 +5,4 @@ import { updateSession } from "@/lib/supabase/proxy";
 export async function proxy(request: NextRequest) {
   return updateSession(request);
 }
-export const config = { matcher: ["/", "/auth"] };
+export const config = { matcher: ["/", "/auth", "/api/dashboard"] };

@@ -19,7 +19,8 @@ BEGIN
       'user_id',CASE WHEN c.user_id=v_mask THEN NULL ELSE c.user_id END,
       'author_name',CASE WHEN c.user_id=v_mask THEN NULL ELSE p.full_name END,
       'is_own',c.user_id=auth.uid()) ORDER BY c.created_at,c.id)
-      FROM public.idea_comments c LEFT JOIN public.profiles p ON p.id=c.user_id WHERE c.idea_id=p_idea_id),'[]'::jsonb),
+      FROM public.idea_comments c LEFT JOIN public.profiles p ON p.id=c.user_id WHERE c.idea_id=p_idea_id AND c.deleted_at IS NULL
+      AND NOT EXISTS (SELECT 1 FROM public.idea_comments parent WHERE parent.id=c.parent_comment_id AND parent.deleted_at IS NOT NULL)),'[]'::jsonb),
     'status_history',COALESCE((SELECT jsonb_agg((to_jsonb(h)-'changed_by') || jsonb_build_object(
       'changed_by',CASE WHEN h.changed_by=v_mask THEN NULL ELSE h.changed_by END,
       'actor_name',CASE WHEN h.changed_by=v_mask THEN NULL ELSE p.full_name END) ORDER BY h.changed_at,h.id)
@@ -34,7 +35,7 @@ BEGIN
       'author_name',CASE WHEN u.user_id=v_mask THEN NULL ELSE p.full_name END) ORDER BY u.created_at,u.id)
       FROM public.idea_progress_updates u LEFT JOIN public.profiles p ON p.id=u.user_id WHERE u.idea_id=p_idea_id),'[]'::jsonb));
 END;
-$function$
+$function$;
 
 REVOKE ALL ON FUNCTION public.get_idea_detail(uuid) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.get_idea_detail(uuid) TO authenticated;
@@ -161,7 +162,8 @@ BEGIN
       (SELECT full_name FROM public.profiles WHERE id=i.owner_id) END,
     'is_author',COALESCE(a=auth.uid(),false), 'is_owner',COALESCE(i.owner_id=auth.uid(),false),
     'vote_count',(SELECT count(*) FROM public.idea_votes WHERE idea_id=i.id),
-    'comment_count',(SELECT count(*) FROM public.idea_comments WHERE idea_id=i.id AND deleted_at IS NULL),
+    'comment_count',(SELECT count(*) FROM public.idea_comments c WHERE c.idea_id=i.id AND c.deleted_at IS NULL
+      AND NOT EXISTS (SELECT 1 FROM public.idea_comments parent WHERE parent.id=c.parent_comment_id AND parent.deleted_at IS NOT NULL)),
     'has_voted',EXISTS(SELECT 1 FROM public.idea_votes WHERE idea_id=i.id AND user_id=auth.uid()),
     'is_following',EXISTS(SELECT 1 FROM public.idea_followers WHERE idea_id=i.id AND user_id=auth.uid()),
     'is_overdue',i.status='In Progress' AND i.target_date<current_date);

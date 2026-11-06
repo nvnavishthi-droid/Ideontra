@@ -13,7 +13,7 @@ async function AuthContent() {
 // Keep request-bound authentication reads beneath Suspense.
 export default function AuthPage() {
   return (
-    <Suspense fallback={<PageLoader />}>
+    <Suspense fallback={<PageLoader variant="auth" />}>
       <AuthContent />
     </Suspense>
   );

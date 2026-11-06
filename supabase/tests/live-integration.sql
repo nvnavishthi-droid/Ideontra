@@ -13,8 +13,7 @@ DO $$ DECLARE idea uuid; parent uuid; reply uuid; detail jsonb; result jsonb; BE
  parent:=public.add_idea_comment(idea,'Parent');reply:=public.add_idea_comment(idea,'Reply',parent);
  PERFORM public.delete_idea_comment(parent);
  detail:=public.get_idea_detail(idea);
- IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(detail->'comments') c WHERE c->>'id'=parent::text AND c->>'deleted_at' IS NOT NULL) THEN RAISE EXCEPTION 'Missing deletion placeholder';END IF;
- IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(detail->'comments') c WHERE c->>'id'=reply::text) THEN RAISE EXCEPTION 'Reply lost';END IF;
+ IF jsonb_array_length(detail->'comments')<>0 OR (detail->>'comment_count')::int<>0 THEN RAISE EXCEPTION 'Deleted thread remains visible or counted';END IF;
  BEGIN PERFORM public.edit_idea_comment(parent,'Restore');RAISE EXCEPTION 'Deleted comment edited';EXCEPTION WHEN raise_exception THEN IF SQLERRM='Deleted comment edited' THEN RAISE;END IF;END;
  BEGIN PERFORM public.save_idea_form(jsonb_build_object('title',repeat('x',101),'category','','links','[]'::jsonb));RAISE EXCEPTION 'Oversized title saved';EXCEPTION WHEN string_data_right_truncation THEN NULL;WHEN raise_exception THEN IF SQLERRM='Oversized title saved' THEN RAISE;END IF;END;
 END $$;

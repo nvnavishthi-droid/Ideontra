@@ -383,3 +383,14 @@ Submission
 Signup confirmation email is not required. Employees should sign up and enter the
 app immediately, without an email link. Exact @closefuture.io domain restriction,
 email/password credentials and Member/Admin authorization remain required.
+
+## User clarification — 2026-11-06
+
+Cards and table rows open details across their full area; card vote/comment counts
+are read-only while detail Vote/Follow stay functional. Remove the Action column.
+Every idea view and My Ideas tab supports Board/List/sort; Admin Overview remains
+a summary. Boards show all public statuses, including Done/Rejected/Withdrawn;
+My Ideas additionally shows author-private Drafts. Deleted comments and their
+replies are hidden with matching visible counts, retaining database tombstones.
+Review opens oldest-first by default and allows explicit alternative sorts.
+These refinements supersede older active-only boards/deletion placeholders.

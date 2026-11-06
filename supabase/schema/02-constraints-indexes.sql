@@ -72,3 +72,6 @@ CREATE INDEX ideas_text_search_idx ON public.ideas USING gin (((((((((((COALESCE
 CREATE INDEX idea_progress_user_idx ON public.idea_progress_updates USING btree (user_id);
 CREATE INDEX idx_progress_updates_idea ON public.idea_progress_updates USING btree (idea_id, created_at);
 CREATE INDEX profiles_name_id_idx ON public.profiles USING btree (full_name, id);
+-- Query-driven partial indexes verified on 2026-11-06.
+CREATE INDEX idea_comments_active_idea_idx ON public.idea_comments (idea_id) WHERE deleted_at IS NULL;
+CREATE INDEX ideas_in_progress_target_idx ON public.ideas (target_date) WHERE status = 'In Progress';

@@ -22,14 +22,6 @@ export async function rpc<N extends keyof Database["public"]["Functions"]>(
   if (error) throw new Error(error.message);
   return data;
 }
-const active = [
-  "Submitted",
-  "Needs More Info",
-  "Under Evaluation",
-  "Approved",
-  "In Progress",
-  "Parked",
-];
 // Fetch a single server-filtered and server-sorted page through the database.
 export async function readIdeas(
   client: SupabaseClient<Database>,
@@ -52,12 +44,11 @@ export async function readIdeas(
         ? "00000000-0000-0000-0000-000000000000"
         : filters.owner || null,
     p_quadrant: filters.quadrant || null,
-    p_sort: ["newest", "votes", "updated"].includes(filters.sort)
+    p_sort: ["newest", "votes", "updated", "oldest"].includes(filters.sort)
       ? filters.sort
       : "newest",
     p_mode: mode,
-    p_active_statuses:
-      filters.view === "all" && filters.layout === "board" ? active : null,
+    p_active_statuses: null,
   });
   const page = z
     .object({ rows: z.array(z.unknown()), total: z.coerce.number() })

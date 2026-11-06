@@ -54,7 +54,7 @@ export function AdminOverview({
               <Button
                 variant="link"
                 onClick={() =>
-                  navigate({ view: "review", layout: "list", status: "" })
+                  navigate({ view: "review", sort: "", status: "" })
                 }
               >
                 Review ideas
@@ -85,7 +85,7 @@ export function AdminOverview({
               <Button
                 variant="link"
                 onClick={() =>
-                  navigate({ view: "overdue", layout: "list", status: "" })
+                  navigate({ view: "overdue", sort: "", status: "" })
                 }
               >
                 View all

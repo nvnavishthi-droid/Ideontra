@@ -5,15 +5,9 @@ import { IdeasTable } from "./IdeasTable";
 import { Pagination } from "@/components/shared/Pagination";
 import { EmptyResults } from "./EmptyResults";
 import { useDashboardNavigation } from "@/hooks/use-dashboard-navigation";
+import type { CSSProperties } from "react";
+import { getBoardStatuses } from "@/lib/board-statuses";
 import type { IdeaPage } from "@/types/idea";
-const boardStatuses = [
-  "Submitted",
-  "Needs More Info",
-  "Under Evaluation",
-  "Approved",
-  "In Progress",
-  "Parked",
-];
 // Keep table rows and board cards in their own scrollport beneath dashboard controls.
 export function DashboardResults({
   data,
@@ -23,7 +17,8 @@ export function DashboardResults({
 }: IdeaInteractions & { data: IdeaPage; pending: boolean }) {
   const { rows, filters, total } = data;
   const { navigate } = useDashboardNavigation();
-  const board = filters.view === "all" && filters.layout === "board";
+  const board = filters.layout === "board";
+  const boardStatuses = getBoardStatuses(filters.view);
   // Clear server-side filters without changing the selected view.
   function clear() {
     navigate({ q: "", status: "", category: "", owner: "", quadrant: "" });
@@ -37,7 +32,8 @@ export function DashboardResults({
           tabIndex={0}
         >
           {total ? (
-            <div className="board-grid min-h-full">
+            <div className="board-grid min-h-full"
+              style={{ "--board-column-count": boardStatuses.length } as CSSProperties}>
               {boardStatuses.map((status) => (
                 <section key={status} className="panel flex flex-col gap-3 p-3">
                   <div className="sticky top-0 flex items-center justify-between gap-2 bg-card py-1">

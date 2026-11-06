@@ -356,3 +356,34 @@ compact horizontal row; filters stay visible. At unusually short heights control
 remain reachable via a bounded control scroller. Pencil frames depict the fixed
 viewport and result scroll boundary; canvas itself has no interactive scrolling.
 This supersedes the earlier initial document-scroll design and is reversible.
+
+## 2026-11-06 — Immediate interaction feedback
+
+Dashboard selections change immediately with the URL. Keep the shell interactive
+while uncached results load using shared content-shaped skeletons. Cached views
+render immediately and background refreshes show the existing Updating indicator.
+Save buttons stop waiting once the database accepts the write; normal success
+popups appear while background queries refresh. Reuse existing tokens and loaders.
+
+## 2026-11-06 — Content skeletons
+
+Use the shared Skeleton primitive with the existing accent fill, control radii
+and spacing. Loading silhouettes match six board columns/cards, list headers and
+rows, Admin count cards/lower panels, auth fields, detail sections, owner controls
+and video aspect ratio. Hide decorative blocks from assistive technology; announce
+one named loading status per surface. Disable pulsing for reduced motion. Keep
+controls/pagination available and retain real content during background refetches.
+No artificial minimum display time; shared ButtonLoader remains for mutations.
+
+## 2026-11-06 — Card, row and view interaction corrections
+
+Whole cards open details via a stretched native button with visible focus. The
+overflow menu stays independently actionable; vote/comment counts are plain text.
+Rows open on click or Enter/Space with visible focus; remove the Action column.
+Use Board/List/sort on every idea view and My Ideas tab; Admin Overview retains
+its count panels. Preserve the selected layout between views. Show nine non-draft
+status columns, adding Draft in My Ideas; horizontal result scrolling preserves
+the existing 200px desktop/280px mobile column widths. Skeletons match the column
+count and four table columns (five for review/overdue). Deleted comments and their
+replies have no visible placeholder, metadata or actions. Detail Vote/Follow keep
+their existing behavior. These supersede prior six-column/placeholder patterns.

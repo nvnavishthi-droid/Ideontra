@@ -15,15 +15,15 @@ export function Pagination({
   total: number;
   shown: number;
 }) {
-  const { navigate, pending } = useDashboardNavigation();
+  const { navigate, pending, prefetch } = useDashboardNavigation();
   const pages = Math.max(1, Math.ceil(total / pageSize));
   const first = total ? (page - 1) * pageSize + 1 : 0;
   return (
     <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 py-3">
-      <p className="text-xs text-muted-foreground">
-        Showing {first}
+      <p className="text-xs text-muted-foreground" aria-live="polite">
+        {pending ? "Updating ideas…" : <>Showing {first}
         {shown > 1 ? `–${first + shown - 1}` : ""} of {total} · Page {page} of{" "}
-        {pages}
+        {pages}</>}
       </p>
       <div className="flex items-center gap-3">
         <div
@@ -51,6 +51,8 @@ export function Pagination({
           size="sm"
           className="h-8"
           disabled={page <= 1 || pending}
+          onMouseEnter={() => { if (page > 1) prefetch({ page: String(page - 1) }, false); }}
+          onFocus={() => { if (page > 1) prefetch({ page: String(page - 1) }, false); }}
           onClick={() => navigate({ page: String(page - 1) }, false)}
         >
           Previous
@@ -60,6 +62,8 @@ export function Pagination({
           size="sm"
           className="h-8"
           disabled={page >= pages || pending}
+          onMouseEnter={() => { if (page < pages) prefetch({ page: String(page + 1) }, false); }}
+          onFocus={() => { if (page < pages) prefetch({ page: String(page + 1) }, false); }}
           onClick={() => navigate({ page: String(page + 1) }, false)}
         >
           Next

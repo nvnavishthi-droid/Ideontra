@@ -11,6 +11,7 @@ import { ButtonLoader } from "@/components/shared/Loaders";
 import { useLiveMutation } from "@/hooks/use-live-mutation";
 import { writeComment } from "@/lib/api/ideas";
 import { fieldLimits } from "@/lib/form-field-limits";
+import { getVisibleComments } from "@/lib/visible-comments";
 import type { Comment } from "@/types/live";
 // Preserve conversation structure and leave database time/ownership checks authoritative.
 export function Discussion({
@@ -20,6 +21,7 @@ export function Discussion({
   ideaId: string;
   comments: Comment[];
 }) {
+  const visible = getVisibleComments(comments);
   const [now, setNow] = useState(0);
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -71,9 +73,7 @@ export function Discussion({
           {comment.author_name ?? "Anonymous"} ·{" "}
           {format(new Date(comment.created_at), "dd MMM yyyy, HH:mm")}
         </p>
-        <p className={comment.deleted_at ? "text-muted-foreground" : ""}>
-          {comment.deleted_at ? "Comment deleted" : comment.content}
-        </p>
+        <p>{comment.content}</p>
         <div className="flex gap-3 text-xs">
           {!reply && (
             <button
@@ -109,7 +109,7 @@ export function Discussion({
           )}
         </div>
         {!reply &&
-          comments
+          visible
             .filter((c) => c.parent_comment_id === comment.id)
             .map((c) => renderComment(c, true))}
       </article>
@@ -118,12 +118,12 @@ export function Discussion({
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-lg font-semibold">
-        Comments · {comments.filter((c) => !c.deleted_at).length}
+        Comments · {visible.length}
       </h3>
-      {!comments.length && (
+      {!visible.length && (
         <p className="text-muted-foreground">No comments yet.</p>
       )}
-      {comments
+      {visible
         .filter((c) => !c.parent_comment_id)
         .map((c) => renderComment(c))}
       <p className="text-xs text-muted-foreground">
@@ -177,7 +177,7 @@ export function Discussion({
         open={!!deleting}
         onClose={() => setDeleting(null)}
         title="Delete your comment?"
-        description="Replies remain visible beneath a deleted comment placeholder."
+        description="This comment and its replies will be hidden from the discussion."
       >
         <div className="flex justify-end gap-3">
           <Button variant="outline" onClick={() => setDeleting(null)}>

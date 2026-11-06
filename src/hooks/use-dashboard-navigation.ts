@@ -1,23 +1,27 @@
-// use-dashboard-navigation.ts — URL-based server navigation for all dashboard controls.
+// use-dashboard-navigation.ts — Immediate URL selections backed by shared server queries.
 "use client";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
-// Update URL parameters and let the server fetch the next result set.
+import { createContext, useContext } from "react";
+interface DashboardNavigationState {
+  pending: boolean;
+  prefetch: (patch: Record<string, string>, resetPage?: boolean) => void;
+}
+export const DashboardNavigationContext = createContext<DashboardNavigationState>({
+  pending: false,
+  prefetch: () => {},
+});
+// Share pending state and update History without waiting for a full RSC navigation.
 export function useDashboardNavigation() {
-  const router = useRouter();
-  const search = useSearchParams();
-  const [pending, startTransition] = useTransition();
+  const context = useContext(DashboardNavigationContext);
   // Apply a parameter patch while preserving unrelated dashboard state.
   function navigate(patch: Record<string, string>, resetPage = true) {
-    const next = new URLSearchParams(search.toString());
+    const next = new URLSearchParams(window.location.search);
     if (resetPage) next.delete("page");
     for (const [key, value] of Object.entries(patch)) {
       if (value) next.set(key, value);
       else next.delete(key);
     }
-    startTransition(() =>
-      router.push(`/?${next.toString()}`, { scroll: false }),
-    );
+    if (next.toString() !== new URLSearchParams(window.location.search).toString())
+      window.history.pushState(null, "", `/?${next.toString()}`);
   }
-  return { navigate, pending };
+  return { navigate, ...context };
 }

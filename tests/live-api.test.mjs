@@ -104,9 +104,23 @@ test("server pagination/filter/sort are sent to RPC without reducing returned ro
   assert.equal(request.args.p_status, "Submitted");
   assert.equal(request.args.p_page, 2);
   assert.equal(request.args.p_page_size, 10);
+  assert.equal(request.args.p_sort, "votes");
   assert.equal(request.args.p_owner, "00000000-0000-0000-0000-000000000000");
   assert.equal(result.rows.length, 1);
   assert.equal(result.total, 201);
+});
+test("board requests include final statuses and review defaults oldest-first", async () => {
+  const requests = [];
+  const client = { rpc: async (_name, args) => {
+    requests.push(args);
+    return { data: { rows: [{ ...raw, status: "Done" }], total: 1 }, error: null };
+  } };
+  for (const view of ["all", "my", "review", "overdue"]) {
+    const result = await readIdeas(client, parseFilters({ role: "admin", view, layout: "board" }));
+    assert.equal(requests.at(-1).p_active_statuses, null);
+    assert.equal(result.rows[0].status, "Done");
+    assert.equal(requests.at(-1).p_sort, view === "review" ? "oldest" : "newest");
+  }
 });
 test("RPC failures are propagated rather than silently returning empty data", async () => {
   await assert.rejects(

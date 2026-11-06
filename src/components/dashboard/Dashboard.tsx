@@ -17,6 +17,8 @@ import {
 } from "@/components/shared/FeedbackDialog";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons/Icon";
+import { ResultsLoader } from "@/components/shared/Loaders";
+import { Pagination } from "@/components/shared/Pagination";
 import { useDashboardNavigation } from "@/hooks/use-dashboard-navigation";
 import type { Idea, IdeaAction, IdeaPage } from "@/types/idea";
 import type { AuthIdentity } from "@/types/auth";
@@ -25,9 +27,12 @@ interface DashboardProps {
   data: IdeaPage;
   review: Idea[];
   overdue: Idea[];
+  loading?: boolean;
+  loadError?: string;
+  onRetry: () => void;
 }
 // Render all dashboard views within a single route and action dialogs over it.
-export function Dashboard({ user, data, review, overdue }: DashboardProps) {
+export function Dashboard({ user, data, review, overdue, loading, loadError, onRetry }: DashboardProps) {
   const { filters, total } = data;
   const { navigate, pending } = useDashboardNavigation();
   const [selected, setSelected] = useState<Idea | null>(null);
@@ -111,14 +116,14 @@ export function Dashboard({ user, data, review, overdue }: DashboardProps) {
           <nav aria-label="Dashboard views" className="flex flex-wrap gap-3">
             <Button
               variant={filters.view === "all" ? "default" : "outline"}
-              onClick={() => navigate({ view: "all", status: "", q: "" })}
+              onClick={() => navigate({ view: "all", status: "", q: "", sort: "" })}
             >
               All ideas
             </Button>
             <Button
               variant={filters.view === "my" ? "default" : "outline"}
               onClick={() =>
-                navigate({ view: "my", layout: "list", status: "", q: "" })
+                navigate({ view: "my", status: "", q: "", sort: "" })
               }
             >
               My Ideas
@@ -136,7 +141,7 @@ export function Dashboard({ user, data, review, overdue }: DashboardProps) {
                   onClick={() =>
                     navigate({
                       view: "review",
-                      layout: "list",
+                      sort: "",
                       status: "",
                       q: "",
                     })
@@ -149,7 +154,7 @@ export function Dashboard({ user, data, review, overdue }: DashboardProps) {
                   onClick={() =>
                     navigate({
                       view: "overdue",
-                      layout: "list",
+                      sort: "",
                       status: "",
                       q: "",
                     })
@@ -199,7 +204,24 @@ export function Dashboard({ user, data, review, overdue }: DashboardProps) {
             />
           )}
         </div>
-        {filters.view === "admin" ? (
+        {loading || loadError ? (
+          loadError ? (
+            <section className="panel results-scroll flex flex-col items-center justify-center gap-3" role="alert">
+              <p>{loadError}</p>
+              <Button onClick={onRetry}>Try again</Button>
+            </section>
+          ) : (
+            <div className="dashboard-results" aria-busy="true">
+              <ResultsLoader
+                variant={filters.view === "admin" ? "admin" :
+                  filters.layout === "board" ? "board" : "table"}
+                boardColumns={filters.view === "my" ? 10 : 9}
+                extraColumn={filters.view === "review" || filters.view === "overdue"} />
+              {filters.view !== "admin" && <Pagination page={filters.page}
+                pageSize={filters.pageSize} total={total} shown={0} />}
+            </div>
+          )
+        ) : filters.view === "admin" ? (
           <section
             className="dashboard-overview"
             aria-label="Admin overview content"

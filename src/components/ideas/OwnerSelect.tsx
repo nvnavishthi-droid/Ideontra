@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { readOwners } from "@/lib/api/ideas";
 import { Select } from "@/components/shared/Select";
 import { Button } from "@/components/ui/button";
-import { ButtonLoader } from "@/components/shared/Loaders";
+import { OwnerSkeleton } from "@/components/shared/ContentSkeletons";
 // Read directory pages on demand without exposing anonymous ownership identities.
 export function OwnerSelect({
   value,
@@ -27,6 +27,7 @@ export function OwnerSelect({
     queryFn: () => readOwners(page, assign),
   });
   const rows = query.data?.rows ?? [];
+  if (query.isPending) return <OwnerSkeleton />;
   return (
     <div className="flex flex-col gap-2">
       <Select
@@ -47,7 +48,6 @@ export function OwnerSelect({
         placeholder={assign ? "Select a team member" : "All owners"}
       />
 
-      {query.isPending && <ButtonLoader />}
       {query.error && (
         <p role="alert" className="text-xs text-destructive">
           {query.error.message}

@@ -13,7 +13,7 @@ BEGIN
     THEN RAISE EXCEPTION 'Invalid pagination'; END IF;
   IF NULLIF(trim(p_q),'') IS NOT NULL AND char_length(trim(p_q))<3
     THEN RAISE EXCEPTION 'Search requires at least 3 characters'; END IF;
-  IF p_sort IS NULL OR p_sort NOT IN ('newest','updated','votes')
+  IF p_sort IS NULL OR p_sort NOT IN ('newest','updated','votes','oldest')
     THEN RAISE EXCEPTION 'Invalid sort'; END IF;
   IF p_mode IS NULL OR p_mode NOT IN ('all','drafts','submissions','owned','following','review','overdue')
     THEN RAISE EXCEPTION 'Invalid view'; END IF;
@@ -43,10 +43,10 @@ BEGIN
         ELSE true END
   ), page_rows AS (
     SELECT * FROM filtered i ORDER BY
-      CASE WHEN p_mode='review' THEN i.submitted_at END ASC NULLS LAST,
-      CASE WHEN p_mode<>'review' AND p_sort='votes' THEN i.votes END DESC,
-      CASE WHEN p_mode<>'review' AND p_sort='updated' THEN i.updated_at END DESC,
-      CASE WHEN p_mode<>'review' AND p_sort='newest' THEN i.created_at END DESC,
+      CASE WHEN p_sort='oldest' THEN i.submitted_at END ASC NULLS LAST,
+      CASE WHEN p_sort='votes' THEN i.votes END DESC,
+      CASE WHEN p_sort='updated' THEN i.updated_at END DESC,
+      CASE WHEN p_sort='newest' THEN i.created_at END DESC,
       i.id
     LIMIT p_page_size OFFSET ((p_page::bigint-1)*p_page_size)
   ) SELECT (SELECT count(*) FROM filtered),
@@ -54,7 +54,7 @@ BEGIN
     INTO v_total,v_rows;
   RETURN jsonb_build_object('rows',v_rows,'total',v_total);
 END;
-$function$
+$function$;
 
 REVOKE ALL ON FUNCTION public.list_ideas(integer,integer,text,text,text,uuid,text,text,text,text[]) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.list_ideas(integer,integer,text,text,text,uuid,text,text,text,text[]) TO authenticated;

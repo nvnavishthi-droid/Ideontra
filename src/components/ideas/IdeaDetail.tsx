@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons/Icon";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { ButtonLoader } from "@/components/shared/Loaders";
+import { DetailSkeleton } from "@/components/shared/ContentSkeletons";
 import { MutationFeedback } from "@/components/shared/MutationFeedback";
 import { Discussion } from "./Discussion";
 import { ExecutionDetails, HistoryDetails } from "./DetailSections";
@@ -35,13 +35,7 @@ export function IdeaDetail({
     ({ kind, active }: { kind: "vote" | "follow"; active: boolean }) =>
       engageIdea(initial.id, kind, active),
   );
-  if (query.isPending)
-    return (
-      <div className="flex items-center gap-3" role="status">
-        <ButtonLoader />
-        Loading idea…
-      </div>
-    );
+  if (query.isPending) return <DetailSkeleton />;
   if (query.error)
     return (
       <div className="flex flex-col gap-4">

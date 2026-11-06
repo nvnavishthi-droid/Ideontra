@@ -14,6 +14,7 @@ export function parseFilters(params: SearchValues): DashboardFilters {
     role === "admin"
       ? ["all", "my", "admin", "review", "overdue"]
       : ["all", "my"];
+  const view = allowed.includes(requestedView as View) ? requestedView as View : "all";
   const personal = value(params, "tab", "drafts");
   const requestedPage = Number(value(params, "page", "1"));
   return {
@@ -22,7 +23,7 @@ export function parseFilters(params: SearchValues): DashboardFilters {
     category: value(params, "category"),
     owner: value(params, "owner"),
     quadrant: value(params, "quadrant"),
-    sort: value(params, "sort", "newest"),
+    sort: value(params, "sort", view === "review" ? "oldest" : "newest"),
     page: Number.isFinite(requestedPage)
       ? Math.max(1, Math.min(1000000, Math.floor(requestedPage) || 1))
       : 1,
@@ -31,9 +32,7 @@ export function parseFilters(params: SearchValues): DashboardFilters {
     )
       ? Number(value(params, "pageSize", "25"))
       : 25,
-    view: allowed.includes(requestedView as View)
-      ? (requestedView as View)
-      : "all",
+    view,
     personal: ["drafts", "submissions", "owned", "following"].includes(personal)
       ? (personal as PersonalTab)
       : "drafts",

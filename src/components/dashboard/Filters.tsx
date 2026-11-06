@@ -144,8 +144,7 @@ export function Filters({
           {total} ideas {pending && "· Updating…"}
         </span>
         <div className="flex gap-3">
-          {filters.view === "all" && (
-            <>
+          <>
               <Button
                 variant={filters.layout === "board" ? "default" : "outline"}
                 onClick={() => navigate({ layout: "board" })}
@@ -160,15 +159,13 @@ export function Filters({
                 <Icon name="list" />
                 List
               </Button>
-            </>
-          )}
+          </>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
                 <Icon name="sort" />
-                {filters.view === "review"
-                  ? "Oldest first"
-                  : ({
+                {({
+                      oldest: "Oldest first",
                       votes: "Most votes",
                       newest: "Newest",
                       updated: "Recently updated",
@@ -181,6 +178,7 @@ export function Filters({
                 onValueChange={(sort) => navigate({ sort })}
               >
                 {[
+                  ...(filters.view === "review" ? [["oldest", "Oldest first"]] : []),
                   ["votes", "Most votes"],
                   ["newest", "Newest"],
                   ["updated", "Recently updated"],
@@ -188,7 +186,6 @@ export function Filters({
                   <DropdownMenuRadioItem
                     key={value}
                     value={value}
-                    disabled={filters.view === "review"}
                   >
                     {label}
                   </DropdownMenuRadioItem>

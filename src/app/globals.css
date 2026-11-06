@@ -139,7 +139,7 @@
   }
   .board-grid {
     display: grid;
-    grid-template-columns: repeat(6, minmax(200px, 1fr));
+    grid-template-columns: repeat(var(--board-column-count, 9), minmax(200px, 1fr));
     gap: 12px;
     align-items: stretch;
   }
@@ -165,7 +165,7 @@
     padding-inline: 20px;
   }
   .board-grid {
-    grid-template-columns: repeat(6, minmax(280px, 1fr));
+    grid-template-columns: repeat(var(--board-column-count, 9), minmax(280px, 1fr));
   }
   .dialog-body {
     max-height: calc(100dvh - 32px);

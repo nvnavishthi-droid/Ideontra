@@ -1,7 +1,6 @@
 // use-idea-realtime.ts — Invalidate query data after authorized private events.
 "use client";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { subscribeIdeas } from "@/lib/api/realtime";
 import type { AuthIdentity } from "@/types/auth";
@@ -10,7 +9,6 @@ export function useIdeaRealtime(
   user: AuthIdentity,
   onError: (message: string) => void,
 ) {
-  const router = useRouter();
   const { id, role, name, email } = user;
   const queries = useQueryClient();
   useEffect(() => {
@@ -20,7 +18,6 @@ export function useIdeaRealtime(
       clearTimeout(timer);
       timer = setTimeout(() => {
         void queries.invalidateQueries({ queryKey: ["live"] });
-        router.refresh();
       }, 250);
     }
     const stop = subscribeIdeas({ id, role, name, email }, refresh, onError);
@@ -28,5 +25,5 @@ export function useIdeaRealtime(
       clearTimeout(timer);
       stop();
     };
-  }, [id, role, name, email, router, queries, onError]);
+  }, [id, role, name, email, queries, onError]);
 }

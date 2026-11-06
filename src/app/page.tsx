@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { getIdentity } from "@/lib/api/session";
 import { Suspense } from "react";
-import { Dashboard } from "@/components/dashboard/Dashboard";
+import { DashboardController } from "@/components/dashboard/DashboardController";
 import { PageLoader } from "@/components/shared/Loaders";
 import { readDashboard } from "@/lib/api/dashboard";
 import type { SearchValues } from "@/lib/dashboard-filters";
@@ -14,9 +14,9 @@ async function DashboardContent({ searchParams }: PageProps) {
   const user = await getIdentity();
   if (!user) redirect("/auth");
   const params = { ...(await searchParams), role: user.role };
-  const { data, review, overdue } = await readDashboard(params);
+  const initial = await readDashboard(params);
   return (
-    <Dashboard user={user} data={data} review={review} overdue={overdue} />
+    <DashboardController user={user} initial={initial} />
   );
 }
 // Keep request-bound URL reads under Suspense for Next.js Cache Components.

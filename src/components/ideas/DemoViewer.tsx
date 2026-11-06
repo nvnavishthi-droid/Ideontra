@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { readDemo } from "@/lib/api/workflows";
 import { Button } from "@/components/ui/button";
-import { ButtonLoader } from "@/components/shared/Loaders";
+import { VideoSkeleton } from "@/components/shared/ContentSkeletons";
 import type { Idea } from "@/types/idea";
 // Sign private URLs on demand; never expose Storage objects as public files.
 export function DemoViewer({
@@ -24,14 +24,14 @@ export function DemoViewer({
     <div className="flex flex-col gap-4">
       {idea.demoPath ? (
         query.isPending ? (
-          <ButtonLoader />
+          <VideoSkeleton />
         ) : query.error ? (
           <p role="alert">{query.error.message}</p>
         ) : (
           <video
             controls
             playsInline
-            className="w-full rounded-md bg-muted"
+            className="aspect-video w-full rounded-md bg-muted object-contain"
             src={query.data}
           >
             <a href={query.data}>Open video</a>

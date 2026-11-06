@@ -1,6 +1,6 @@
 # Ideontra — project state
 
-Authoritative current record, updated 2026-11-05. Historical entries are archived
+Authoritative current record, updated 2026-11-06. Historical entries are archived
 in docs/archive/project-history-1.md and project-history-2.md; their old pending
 statements are superseded by this file. Scope: docs/scope/scope-final.md.
 
@@ -33,7 +33,7 @@ review history. Those audit snapshots precede the current integration fixes.
 - idea_private_details: protected submitter identity.
 - idea_votes and idea_followers: unique user/idea engagement.
 - idea_comments: one-level replies, author-only 15-minute edits/deletes; deleted_at
-  tombstones preserve replies. Deleted comments retain a placeholder.
+  tombstones preserve records; deleted comments and their replies are hidden.
 - idea_status_history: every transition with actor, time and required reason.
 - idea_owner_history: all assignments/reassignments.
 - idea_progress_updates: Owner/Admin progress text and timestamp.
@@ -71,7 +71,8 @@ password sign-in passed live verification on 2026-11-05.
 
 All lists use URL state and manual TanStack Table; none filter loaded browser
 arrays. Search requires three trimmed characters. Board grouping only partitions
-an already server-filtered page into its six active status columns.
+an already server-filtered page into the requested status columns; see the latest
+dashboard corrections in docs/dashboard-interactions.md.
 
 ## Write contracts
 
@@ -106,9 +107,10 @@ Live subscription authorization/delivery testing is in progress.
 
 Incomplete private drafts are allowed; mandatory fields are required on submit.
 All ideas excludes drafts; My Ideas drafts are author-only. Admin review includes
-Submitted only, oldest first. Deleted comment placeholders keep replies. Previous
+Submitted only, oldest first by default. Deleted threads are hidden. Previous
 scores remain during reevaluation until the Admin changes them. User approved all
-four behaviors on 2026-11-05. Decisions: docs/decisions.md.
+four behaviors on 2026-11-05; comment presentation was superseded on 2026-11-06.
+Decisions: docs/decisions.md.
 
 ## Verification and remaining work
 
@@ -303,3 +305,94 @@ Git publication preparation: repository initialized on main; user selected publi
 remote https://github.com/nvnavishthi-droid/Ideontra.git and supplied commit author.
 Staged files passed secret scan; only blank .env.example tracked, no .env.local,
 node_modules or .next. Push verification follows the initial commit.
+
+## Production deployment verified — 2026-11-06
+
+User deployed GitHub main on Vercel at https://ideontra.vercel.app. Browser
+verification passed actual demo Admin login, dashboard identity/content, desktop
+1440x1000/mobile 390x844 header/filter typography, owner filtering/clearing via
+URL, and no runtime/console errors. No idea records modified. Final sign-out
+returns to /auth. Expected NEXT_PUBLIC_SITE_URL is https://ideontra.vercel.app;
+Vercel/Supabase hosted configuration values were not directly inspected.
+Production upload/workflow mutations and long-duration Realtime outage testing
+were not rerun in this smoke check. Local full-flow evidence remains documented.
+
+README publication update (2026-11-06): user requested GitHub README correction
+and live link. Document deployed Vercel URL, current verification, removed demo
+ideas, retained accounts and remaining fresh-install/walkthrough limitations.
+Publish no credentials. Commit README and current project verification record.
+
+## Query index audit — 2026-11-06 (verified)
+
+User requested indexes based on query functions across all tables. Saved schema
+review covers all ten public tables; existing indexes cover every foreign key,
+idea search/filter fields and detail-history lookups. Two partial index candidates
+are prepared in docs/database/query-indexes-draft.sql; rationale and coverage are
+in docs/database/query-index-audit.md. MCP connection restored and locked project
+identity verified. All foreign keys have index coverage and all ten tables retain
+forced RLS. Applied query_driven_partial_indexes via MCP; saved server-assigned
+migration 20261106071758 and updated snapshot. Both indexes valid/ready. Overdue
+count uses the new index-only scan; tiny comment table still uses a sequential
+scan. No speedup claimed. Existing duplicate followers index and informational
+unused-index findings retained for separate review. RPCs, RLS and data unchanged.
+
+## Responsive dashboard interactions — 2026-11-06 (verified locally)
+
+Replace per-click full RSC navigation with URL history plus user-scoped TanStack
+dashboard queries. A private GET /api/dashboard reads URL params on the server
+through existing verified identity and RPC contracts. Initial rendering retains
+server data. Controls highlight immediately; content skeletons cover uncached
+results. Cache visited results for 60 seconds, preload the next page, cancel
+obsolete browser fetches and preserve Back/Forward/deep links. Realtime/mutation
+invalidation refresh queries without duplicate router.refresh calls. Confirm saves
+after RPC success, refetch in the background. Admin reads run concurrently and
+omit the unused all-ideas request. No database or authorization changes.
+
+Deployment latency: configure the next Vercel build for Mumbai (bom1), colocated
+with Supabase ap-south-1; current deployed function region is not inspected.
+During QA disable development Server Function argument logging to keep login
+credentials out of terminal output. These require no new packages.
+
+QA: production build at http://127.0.0.1:3002, Edge/Playwright (Browser plugin
+unavailable), desktop 1440x900/mobile 390x844. Selection 34ms, fresh result 391ms,
+cached view 46ms, prefetched Next 51ms with no extra request on click. Verified
+real 10-row server pages, Prev/Next, Back/Forward, rapid changes, delayed responses,
+retry after an injected 503, visible pagination while loading, no viewport overflow,
+unauthenticated 401 and Member role-spoof rejection. No app/runtime errors; one
+expected 503 console entry in the injected failure test. No content writes tested
+or performed. Build/TypeScript/lint and 25 unit tests pass; saved-write callback
+timing tested with a pending-refetch unit stub. No commit, push or deploy performed;
+live-site latency and Mumbai region remain unverified until redeployment.
+
+## Shared skeleton loading — 2026-11-06
+
+Extend the existing Skeleton primitive to match board cards, list rows, Admin
+counts/panels, initial dashboard/authentication screens, idea details, owner
+directories and private video lookup. Show skeletons only for missing initial
+data; preserve content during cached/background refreshes and keep shared button
+spinners for saves. Use existing tokens, bounded scroll areas, one accessible
+loading region per surface and reduced-motion support. No artificial delay,
+dependencies or backend changes. Position each loading region relatively so its
+screen-reader announcement stays within the bounded scroll container on mobile.
+
+QA: local development app on port 3001, Edge/Playwright (Browser plugin unavailable),
+1440x900 desktop and 390x844 mobile. Delayed real reads verified board/list/Admin,
+idea detail and owner skeletons; cached returns retain content. Verified visible
+controls/pagination, no document overflow, reduced-motion animation disabled,
+one accessible status per surface and no runtime/console errors. Initial route,
+auth and video skeletons also rendered in isolation with the app stylesheet;
+video reserves 16:9. No content writes or video uploads performed. Production
+build, lint, TypeScript and all 25 unit tests pass. Not pushed or redeployed.
+
+## Dashboard interaction corrections — 2026-11-06 (verified locally)
+
+User approved whole-card/row opening, read-only card counts, removing the table
+Action column, board/list/sort in every idea view, and all status columns. Admin
+Overview stays a summary. Deleted parents and their replies are hidden with
+matching database counts; no stored records are removed. Read RPC migration
+20261106082337 applied to the locked project; existing grants/RLS unchanged. Specification and QA:
+docs/dashboard-interactions.md. Supersedes older six-column/placeholder decisions.
+
+## Release and Pencil sync — 2026-11-06
+User authorized test.pen synchronization, GitHub push and Vercel production
+redeployment. Progress and verification: docs/release-2026-11-06.md.

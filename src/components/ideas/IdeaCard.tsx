@@ -24,39 +24,42 @@ export function IdeaCard({
   onAction,
 }: IdeaInteractions & { idea: Idea; role: Role }) {
   return (
-    <article className="panel flex flex-col gap-3 p-4 transition-colors hover:border-primary/30">
+    <article className="panel relative flex flex-col gap-3 p-4 transition-colors hover:border-primary/30">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs text-muted-foreground">{idea.category}</span>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Actions for ${idea.title || "Untitled draft"}`}
-            >
-              <Icon name="more" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuGroup>
-              <DropdownMenuItem onSelect={() => onOpen(idea)}>
-                View details
-              </DropdownMenuItem>
-              {ideaActions(idea, role).map((option) => (
-                <DropdownMenuItem
-                  key={option.action}
-                  onSelect={() => onAction(idea, option.action)}
-                >
-                  {option.label}
+        <div className="relative z-10">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`Actions for ${idea.title || "Untitled draft"}`}
+              >
+                <Icon name="more" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuGroup>
+                <DropdownMenuItem onSelect={() => onOpen(idea)}>
+                  View details
                 </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                {ideaActions(idea, role).map((option) => (
+                  <DropdownMenuItem
+                    key={option.action}
+                    onSelect={() => onAction(idea, option.action)}
+                  >
+                    {option.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
       <button
         onClick={() => onOpen(idea)}
-        className="idea-title text-left font-medium leading-5 hover:text-primary"
+        aria-label={`View idea: ${idea.title || "Untitled draft"}`}
+        className="idea-title text-left font-medium leading-5 after:absolute after:inset-0 after:rounded-lg after:cursor-pointer hover:text-primary focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring"
       >
         {idea.title || "Untitled draft"}
       </button>
@@ -71,14 +74,10 @@ export function IdeaCard({
           <Icon name="vote" className="text-muted-foreground" />
           {idea.votes}
         </span>
-        <button
-          onClick={() => onOpen(idea)}
-          aria-label={`${idea.comments} comments on ${idea.title || "Untitled draft"}`}
-          className="flex items-center gap-2"
-        >
+        <span className="flex items-center gap-2" aria-label={`${idea.comments} comments`}>
           <Icon name="comment" className="text-muted-foreground" />
           {idea.comments}
-        </button>
+        </span>
         <span className="ml-auto truncate text-muted-foreground">
           {idea.author}
         </span>

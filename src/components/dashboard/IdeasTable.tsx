@@ -7,7 +7,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { Button } from "@/components/ui/button";
 import type { Idea } from "@/types/idea";
 import { format } from "date-fns";
 import { EmptyResults } from "./EmptyResults";
@@ -64,27 +63,30 @@ export function IdeasTable({
                   )}
                 </th>
               ))}
-              <th className="px-4 font-normal">
-                {review ? "Submitted" : overdue ? "Target date" : "Action"}
-              </th>
               {(review || overdue) && (
-                <th className="px-4 font-normal">Action</th>
+                <th className="px-4 font-normal">{review ? "Submitted" : "Target date"}</th>
               )}
             </tr>
           ))}
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.id} className="border-t hover:bg-muted/30">
+            <tr key={row.id} tabIndex={0} aria-haspopup="dialog"
+              aria-label={`View idea: ${row.original.title || "Untitled draft"}`}
+              className="cursor-pointer border-t hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              onClick={() => onOpen(row.original)}
+              onKeyDown={(event) => {
+                if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
+                  event.preventDefault();
+                  onOpen(row.original);
+                }
+              }}>
               {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className="px-4 py-5">
                   {cell.column.id === "title" ? (
-                    <button
-                      className="text-left font-medium hover:text-primary"
-                      onClick={() => onOpen(row.original)}
-                    >
+                    <span className="font-medium">
                       {row.original.title || "Untitled draft"}
-                    </button>
+                    </span>
                   ) : (
                     flexRender(cell.column.columnDef.cell, cell.getContext())
                   )}
@@ -103,20 +105,11 @@ export function IdeasTable({
                   {overdue && <p>{row.original.owner} · Overdue</p>}
                 </td>
               )}
-              <td className="px-4">
-                <Button variant="link" onClick={() => onOpen(row.original)}>
-                  {review
-                    ? "Review"
-                    : row.original.status === "Draft"
-                      ? "Open draft"
-                      : "Open idea"}
-                </Button>
-              </td>
             </tr>
           ))}
           {!rows.length && (
             <tr>
-              <td colSpan={review || overdue ? 6 : 5}>
+              <td colSpan={review || overdue ? 5 : 4}>
                 {onClear ? (
                   <EmptyResults onClear={onClear} />
                 ) : (
