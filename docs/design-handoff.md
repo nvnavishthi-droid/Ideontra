@@ -68,6 +68,9 @@ missing actions/states, content inconsistencies and next design tasks.
 
 ## Expanded design set
 
-The initial 27-state set now has 79 states. See
+The initial 27-state set now has 87 states. See
 [design-completion.md](design-completion.md) for Admin Review and the completed
 alternate-state index. The original audit is retained as historical evidence.
+
+The latest interaction and skeleton synchronization is recorded in
+[release-2026-11-06.md](release-2026-11-06.md), including production verification.

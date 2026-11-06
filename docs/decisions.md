@@ -391,3 +391,9 @@ to the RPC. Hide deleted branches in detail projections and summary counts, keep
 tombstones/audit records. These reversible presentation/read-contract choices avoid
 hard deletion, client filtering and fake controls; supersede prior placeholders and
 six active columns. Details: docs/dashboard-interactions.md.
+
+## 2026-11-06 — Pencil release synchronization
+
+Use the installed extension MCP when the configured copied binary times out;
+preserve config. Native static artboards document interactions and loading states;
+the app implements them. Reversible in Git; verification: release-2026-11-06.md.
