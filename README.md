@@ -4,6 +4,22 @@ Internal idea capture, discussion, evaluation and execution tracking. Built with
 Next.js 16 App Router, TypeScript, Tailwind v4, shadcn/Radix, TanStack Query/Table
 and Supabase Auth/Postgres/Storage/private Realtime Broadcast.
 
+## Live application
+
+**[Open Ideontra](https://ideontra.vercel.app)** · [Sign in](https://ideontra.vercel.app/auth)
+
+Hosted on Vercel from this repository's `main` branch, with Supabase providing
+authentication, database, private video storage and live updates.
+
+## Features
+
+- Member/Admin roles and per-idea Owners; private drafts and anonymous submission.
+- Idea submission, voting, comments with one reply level, and following.
+- Validated status transitions, evaluation scores and derived quadrants.
+- Owner assignment, target dates, overdue work, progress and completion demos.
+- Board, list, My Ideas and Admin views with server-side search/filter/pagination.
+- Single-screen dashboard with internal result scrolling and popup workflows.
+
 ## Run locally
 
 Use Node.js 22+ and npm (the installed Supabase SDK requires Node 22 or newer). Copy .env.example to .env.local and set:
@@ -13,7 +29,7 @@ Use Node.js 22+ and npm (the installed Supabase SDK requires Node 22 or newer). 
 - NEXT_PUBLIC_SITE_URL — application origin, locally http://localhost:3000.
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
@@ -28,7 +44,11 @@ The only authorized target is knmqlkhnfumeuxgnkuez (CloseFuture, ap-south-1).
 In Auth → Sign In / Providers → Email, disable Confirm Email and save. New
 signups must return a session immediately. Enable the Custom Access Token hook
 public.custom_access_token_hook.
-The hook is already enabled on the current target. Configure the production site URL before deployment. Never configure a service-role key in the app.
+The hook is enabled and Confirm Email is disabled on the current target.
+For Vercel, configure the two public Supabase variables above and set
+`NEXT_PUBLIC_SITE_URL=https://ideontra.vercel.app`. Local development uses
+`http://localhost:3000` instead. Never add a service-role key or the local demo
+password to the application deployment.
 
 Current target migrations are already applied; do not reapply them manually.
 Every applied change is saved under supabase/migrations. The project originally
@@ -52,6 +72,9 @@ demo-owner@closefuture.io and demo-colleague@closefuture.io. Their password is
 the value supplied when first seeded. On this workstation, the approved demo
 password is stored in ignored .env.local as IDEONTRA_DEMO_PASSWORD. Preconfirmed seed accounts do not send mail.
 The current live project's employee credentials are not changed by this script.
+The twenty seeded demo ideas were removed at the user's request; all four demo
+accounts remain. Running the seed again recreates its sample ideas. Passwords
+are shared privately with authorized reviewers, never published in this repository.
 
 ## Data and permissions
 
@@ -81,10 +104,23 @@ Rollback-only database checks live in supabase/tests. Current verification is
 recorded in docs/verification/live-integration.md. Walkthrough steps are in
  docs/walkthrough.md. The complete current inventory is docs/project.md.
 
-Signup without confirmation email passed live verification.
-Known external checks: production hosting configuration needs verification. Leaked-password protection is
-plan-dependent and remains disabled on the hosted project. The approved UI is
-light; undefined dark-theme branding has not been invented. Status buttons
-implement the optional drag-and-drop workflow. No Slack/Jira, notifications or
-additional analytics are included. Git commit/push and publication await an
-explicit user instruction.
+Latest local checks passed: lint, TypeScript, all **20 unit tests**, and the
+production build. Live database verification covers workflow rules, permissions,
+anonymity, private uploads/playback and Broadcast authorization. Production smoke
+checks passed Admin login/logout, dashboard loading and owner filters at desktop
+and mobile sizes. Full production mutation/upload tests were not repeated.
+
+## Known limitations and remaining handoff
+
+- Fresh empty-database installation of the schema snapshot is **not runtime
+  verified**; the paid isolated-branch test was declined. Existing-database SQL
+  checks and seed execution/idempotency were verified separately.
+- Hosted leaked-password protection remains disabled (plan-dependent).
+- The interface uses the approved light theme. Status buttons implement workflow
+  transitions; optional Kanban drag-and-drop is not implemented.
+- A local UI overview is available at [docs/verification/walkthrough.webm](docs/verification/walkthrough.webm).
+  Final FRD walkthrough coverage and a shareable submission link remain pending.
+- Slack/Jira integrations, notifications and additional analytics are out of scope.
+
+See [project state](docs/project.md), [locked FRD scope](docs/scope/scope-final.md)
+and [design system](docs/design-system.md) for the detailed project record.
