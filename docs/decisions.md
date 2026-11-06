@@ -441,3 +441,31 @@ logging the cause, so production failures were invisible in Vercel logs. It now
 logs the error name and message with console.error on the server only. Users
 still see the generic message; request bodies, secrets and provider payloads are
 never logged. Reversible by removing the one log line in route.ts.
+
+## 2026-11-06 — Idea chat moved to a Supabase Edge Function
+
+User decision: move the Gemini call from the Next.js route to the Supabase Edge
+Function `idea-chat`, with keys in Edge Function secrets, and have the browser
+call it directly (history through the existing get_idea_chat RPC). Smaller
+choices made during the move:
+- Use the existing `@supabase/supabase-js` (pinned 2.119.0) and `zod` (4.6.7) via
+  `npm:` imports instead of the docs' newer `@supabase/server` helper, because
+  AGENTS.md forbids new libraries without approval.
+- Keep platform `verify_jwt = true` (Supabase docs recommend it for user-facing
+  functions) and also check `auth.getClaims` inside the function.
+- Keep the Vault-backed `IDEA_CHAT_SERVER_SECRET` check so browsers still cannot
+  call begin/finish directly; the function holds the secret instead of Vercel.
+- CORS uses supabase-js's `corsHeaders` (any origin); auth is the bearer token,
+  not cookies, so origin is not the security boundary.
+- `supabase/functions` is excluded from the Next.js TypeScript build because Deno
+  `npm:` imports do not resolve there; unit tests transpile and stub them.
+Reversible: the old route can be restored from git commit 8b9d047.
+
+## 2026-11-06 — Diagnostic logs in the idea-chat Edge Function
+
+User asked for detailed logs to find the "Unauthorized" failure. idea-chat now
+writes one JSON line per step (trace ID, auth claims, each RPC's status/code/
+message/details/hint, Gemini HTTP status and error body, timings). Secrets are
+logged only as shape (length, quotes/newline flags) plus a 16-hex SHA-256
+fingerprint, never the value; question/answer text is logged only as character
+counts. Reduce to error-only logging once the issue is resolved.

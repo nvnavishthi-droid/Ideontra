@@ -12,7 +12,33 @@ Load older messages through server pagination, preserving chronological display.
 Closing/reopening the dialog restores the signed-in user's saved conversation.
 Changing ideas or signing out must never retain another conversation onscreen.
 
-The server validates the session and idea UUID, fetches the idea through existing
+## Runtime architecture (moved to Supabase Edge Function, 2026-11-06)
+
+User decision (2026-11-06): the model call runs in the Supabase Edge Function
+`idea-chat`, not in Next.js/Vercel. The Next.js `/api/idea-chat` route and all
+Gemini variables on Vercel are removed.
+
+- History: the browser calls the existing `get_idea_chat` RPC (SECURITY INVOKER,
+  caller-only RLS) through `src/lib/api/chat-client.ts`.
+- Send: the browser calls `supabase.functions.invoke('idea-chat')` with the
+  signed-in user's access token and body `{ ideaId, requestId, content }`.
+- The function keeps platform `verify_jwt = true`, re-checks the caller with
+  `auth.getClaims`, and runs every RPC as that user (publishable key plus the
+  forwarded Authorization header). No service-role or secret key is used.
+- Flow: `get_idea_detail` → `begin_idea_chat` → `get_idea_chat` → Gemini →
+  `finish_idea_chat` (null answer on failure so the question can be retried).
+  It returns `{ rows, userId }` (the newest history page) like the old route.
+- Edge Function secrets (never in Vercel or the browser): `GEMINI_API_KEY`,
+  `GEMINI_API_URL` (`https://generativelanguage.googleapis.com/v1beta`),
+  `GEMINI_FREE_TIER_CONFIRMED` (`true`), `IDEA_CHAT_SERVER_SECRET` (must equal
+  the Vault secret `idea_chat_server_secret`). No migration is needed.
+- Errors: allow-listed messages reach the user; any other cause is logged with
+  `console.error` (name and message only) and returned as the generic message.
+- Code: `supabase/functions/idea-chat/` (`index.ts` handler, `chat.ts`
+  orchestration, `provider.ts` Gemini). Deployed through Supabase MCP to the
+  locked project only.
+
+The function validates the session and idea UUID, fetches the idea through existing
 sanitized authorized RPCs, and sends only content fields and this user's recent
 conversation to Gemini. Exclude author/profile identifiers, signed Storage URLs,
 comments and other users' conversations. Treat idea text as untrusted context;
@@ -20,7 +46,7 @@ answer questions about this idea, acknowledge missing facts, and perform no writ
 to the idea. The model has no database credentials or tools.
 
 Use Google's REST API without adding dependencies. Keep the Google API key and
-model configuration server-only in the centralized environment module. Verify a
+model configuration in Edge Function secrets only. Verify a
 currently available free-tier text model before implementation; no paid fallback.
 Google free-tier quotas can reject requests. Surface failures without losing the
 saved question or claiming an answer was saved. Never log prompts or credentials.

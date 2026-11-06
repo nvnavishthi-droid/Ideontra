@@ -128,26 +128,31 @@ and [design system](docs/design-system.md) for the detailed project record.
 ## Idea AI chat setup
 
 Idea details include an **Ask AI** tab with permanent private history per user
-and idea. The server fetches authorized idea content; other users’ conversations
-and anonymous-author identifiers are excluded. Google may use free-tier inputs
-and outputs to improve its products.
+and idea. History loads through the `get_idea_chat` RPC; questions go to the
+Supabase Edge Function `idea-chat` (`supabase/functions/idea-chat/`), which
+fetches authorized idea content, calls Gemini and saves the answer. Other users’
+conversations and anonymous-author identifiers are excluded. Google may use
+free-tier inputs and outputs to improve its products.
 
-Use an AI Studio API key from a Google project **with billing disabled**. Set
-`GEMINI_API_KEY` in `.env.local`, and only after checking billing, set
-`GEMINI_FREE_TIER_CONFIRMED=true`. Set `GEMINI_API_URL` to
-`https://generativelanguage.googleapis.com/v1beta`. The model is pinned to
-`gemini-3.5-flash-lite`; quota errors stop the request with no paid fallback.
-The app cannot independently inspect the Google project's billing status.
+All chat keys are **Edge Function secrets** in the Supabase project
+(`knmqlkhnfumeuxgnkuez` → Edge Functions → Secrets), never Vercel or `.env.local`:
 
-The chat migration creates a random secret in Supabase Vault named
-`idea_chat_server_secret`. Through an authorized secure admin workflow, copy it
-to server-only `IDEA_CHAT_SERVER_SECRET`; never paste it into chat or commit it.
-It has been configured in this workspace's ignored `.env.local`. Configure all
-four variables in the hosting environment and redeploy when ready. To rotate,
-use Vault's `update_secret` through the locked project's MCP and update the
-server environment together. Runtime uses the user's session, never a service
-role key. Chat remains unavailable until credentials and free-tier confirmation
-are configured; history reads remain available.
+| Secret | Value |
+|---|---|
+| `GEMINI_API_KEY` | AI Studio key from a Google project **with billing disabled** |
+| `GEMINI_API_URL` | `https://generativelanguage.googleapis.com/v1beta` |
+| `GEMINI_FREE_TIER_CONFIRMED` | `true`, only after checking billing is disabled |
+| `IDEA_CHAT_SERVER_SECRET` | the Vault secret `idea_chat_server_secret` |
+
+The model is pinned to `gemini-3.5-flash-lite`; quota errors stop the request
+with no paid fallback. Secrets apply immediately without redeploying. The
+function keeps JWT verification on and runs every RPC as the calling user —
+never with a service-role or secret key. Unexpected errors appear in the
+function's logs as `[idea-chat] unexpected error: …`.
+
+The chat migration creates the random Vault secret `idea_chat_server_secret`.
+To rotate, use Vault's `update_secret` through the locked project's MCP and
+update the Edge Function secret together.
 
 For a fresh installation, run the existing snapshot then the two chat migrations
 `20261106095150_private_idea_ai_chat.sql` and

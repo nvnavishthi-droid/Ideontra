@@ -2,6 +2,16 @@
 
 ## Idea AI chat — implemented, activation pending 2026-11-06
 
+Runtime move (2026-11-06, user decision): Gemini calls run in the Supabase Edge
+Function `idea-chat` (supabase/functions/idea-chat). The browser reads history via
+the get_idea_chat RPC and sends via functions.invoke; the Next.js /api/idea-chat
+route, chat-server.ts and Vercel Gemini variables are removed. Secrets live in
+Edge Function secrets. Contract: [idea-ai-chat.md](idea-ai-chat.md).
+Deployed 2026-11-06 via Supabase MCP to knmqlkhnfumeuxgnkuez (CloseFuture,
+ap-south-1): idea-chat v1, ACTIVE, verify_jwt=true. Smoke test: CORS preflight
+200, unauthenticated POST 401. Pending: the four Edge Function secrets (MCP
+secret prompts declined; to be set in the dashboard), then a live signed-in test.
+
 Setup-message clarification: missing credentials or free-tier confirmation shows
 a neutral free Google AI Studio setup message. The popup does not mean billing
 must be enabled. Local inspection found GEMINI_API_KEY and the free-tier
