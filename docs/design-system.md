@@ -1,5 +1,13 @@
 # Ideas & Innovation Board — Design System
 
+## Approved extension — Idea AI chat (2026-11-06)
+
+Use an Ask AI tab inside the idea-detail dialog, existing typography and semantic
+tokens, bordered message sections labeled You/AI with text-xs timestamps, and a
+bounded internal scroller. Keep the composer visible with the shared Textarea,
+inline validation and Send/ButtonLoader. Restore private saved history on reopen;
+load older messages with a secondary control. See docs/idea-ai-chat.md.
+
 Adapted on 2026-11-04 from the user-supplied
 `/Users/navishthinv/Downloads/DESIGN_SYSTEM.md` (Orbit Design System & UI Rules).
 This is the visual reference for the project in the Ideontra folder.

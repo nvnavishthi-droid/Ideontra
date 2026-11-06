@@ -1,5 +1,13 @@
 # Locked scope — Ideas & Innovation Board
 
+## User-approved extension — 2026-11-06
+
+Add Google-powered AI chat inside idea details. Fetch authorized idea content
+from Supabase and answer questions related to that idea. Store permanent chat
+history scoped to idea ID and signed-in user ID; users see only their own chats.
+User approved the design extension and sending idea content to Google.
+Implementation contract: docs/idea-ai-chat.md; RLS approved on 2026-11-06.
+
 Source: `/Users/navishthinv/Downloads/FRD_Ideas_And_Innovation_Board.pdf`,
 eight pages, reviewed 2026-11-04. The text below preserves the FRD requirements;
 the PDF remains the reference for original formatting and the workflow diagram.

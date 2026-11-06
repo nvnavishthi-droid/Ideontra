@@ -397,3 +397,39 @@ six active columns. Details: docs/dashboard-interactions.md.
 Use the installed extension MCP when the configured copied binary times out;
 preserve config. Native static artboards document interactions and loading states;
 the app implements them. Reversible in Git; verification: release-2026-11-06.md.
+
+## 2026-11-06 — Private idea AI chat
+
+User approved scope, Google data processing and permanent per-user/idea history,
+then approved the proposed RLS contract. Use Google free-tier Flash-Lite only;
+no paid/provider fallback. Use REST instead of a new SDK dependency. Store the
+server-write secret in Vault rather than connection settings so pooled sessions
+work without exposing a secret in SQL source. Use keyset history pages (25),
+20 recent messages/24000 characters of model context, 2048 output tokens, a
+30-second timeout, 20 requests/hour/user and a two-minute request lease. These
+reversible bounds limit quota use while retaining all history. Alternative: send
+all permanent history, rejected because context and quota use grow unbounded.
+
+Chat history uses SECURITY INVOKER because caller-only SELECT grants suffice;
+reserve/finish retain narrow DEFINER elevation for RPC-only writes.
+
+Retrying an older question appends that validated question to the model context,
+even when it falls outside the newest history page. This avoids answering an
+unrelated newer question; it adds no duplicate persisted message.
+
+## 2026-11-06 — Free-tier setup wording
+
+Replace the chat configuration popup's billing-disabled wording with a neutral
+free Google AI Studio connection message. The earlier message was mistaken for
+a request to add billing. Keep the existing credential/free-tier checks; do not
+assume billing status or populate missing secrets. This copy-only choice is
+reversible; technical setup instructions remain in README.md.
+
+## 2026-11-06 — Chat model moved to gemini-3.5-flash-lite
+
+Google now returns 404 for gemini-2.5-flash-lite ("no longer available to new
+users") and names gemini-3.5-flash-lite as the replacement. Switch the pinned
+model to gemini-3.5-flash-lite; it is still Flash-Lite with no paid fallback, and a
+test call with the configured key returned STOP in the existing response shape.
+Alternative: gemini-3.5-flash, rejected because it uses more quota. Reversible by
+changing CHAT_MODEL in chat-provider.ts.

@@ -124,3 +124,32 @@ and mobile sizes. Full production mutation/upload tests were not repeated.
 
 See [project state](docs/project.md), [locked FRD scope](docs/scope/scope-final.md)
 and [design system](docs/design-system.md) for the detailed project record.
+
+## Idea AI chat setup
+
+Idea details include an **Ask AI** tab with permanent private history per user
+and idea. The server fetches authorized idea content; other users’ conversations
+and anonymous-author identifiers are excluded. Google may use free-tier inputs
+and outputs to improve its products.
+
+Use an AI Studio API key from a Google project **with billing disabled**. Set
+`GEMINI_API_KEY` in `.env.local`, and only after checking billing, set
+`GEMINI_FREE_TIER_CONFIRMED=true`. Set `GEMINI_API_URL` to
+`https://generativelanguage.googleapis.com/v1beta`. The model is pinned to
+`gemini-3.5-flash-lite`; quota errors stop the request with no paid fallback.
+The app cannot independently inspect the Google project's billing status.
+
+The chat migration creates a random secret in Supabase Vault named
+`idea_chat_server_secret`. Through an authorized secure admin workflow, copy it
+to server-only `IDEA_CHAT_SERVER_SECRET`; never paste it into chat or commit it.
+It has been configured in this workspace's ignored `.env.local`. Configure all
+four variables in the hosting environment and redeploy when ready. To rotate,
+use Vault's `update_secret` through the locked project's MCP and update the
+server environment together. Runtime uses the user's session, never a service
+role key. Chat remains unavailable until credentials and free-tier confirmation
+are configured; history reads remain available.
+
+For a fresh installation, run the existing snapshot then the two chat migrations
+`20261106095150_private_idea_ai_chat.sql` and
+`20261106095709_idea_chat_invoker_history.sql` (Supabase Vault is required).
+Chat checks: `npm test` and the rollback-only `supabase/tests/idea-chat.sql`.

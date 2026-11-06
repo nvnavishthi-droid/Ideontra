@@ -83,3 +83,13 @@ therefore protected from ordinary client removal. Proposed temporary policy in
 docs/database/qa-storage-cleanup-policy.sql allows only Admin deletion of that
 single exact QA path, then is immediately dropped. No real employee upload is
 included. This is cleanup only, not a permanent product permission change.
+# Idea AI chat — approved 2026-11-06
+
+Review the concrete policy/access contract in
+[idea-ai-chat.md](idea-ai-chat.md#approved-persistence-and-access-contract).
+Only each conversation's user may read it, subject to current idea visibility;
+Admins cannot read other users' chats. Direct writes are denied for all roles.
+Validated RPCs own writes; assistant responses require server-only authorization.
+User approved this policy contract on 2026-11-06. Applied migrations
+20261106095150 and 20261106095709; history is INVOKER, writes remain
+server-authorized DEFINER. Rollback privacy/security regression checks pass.

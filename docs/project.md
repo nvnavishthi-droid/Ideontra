@@ -1,5 +1,17 @@
 # Ideontra — project state
 
+## Idea AI chat — implemented, activation pending 2026-11-06
+
+Setup-message clarification: missing credentials or free-tier confirmation shows
+a neutral free Google AI Studio setup message. The popup does not mean billing
+must be enabled. Local inspection found GEMINI_API_KEY and the free-tier
+confirmation missing; no credentials or billing configuration were changed.
+
+User approved an Ask AI surface within idea details and sending idea content to
+Google, with permanent history private to each user and idea. Contract and
+proposed access policies: [idea-ai-chat.md](idea-ai-chat.md). RLS review was approved on 2026-11-06. Schema and runtime implementation are
+complete; live Google activation awaits credentials and billing confirmation.
+
 Authoritative current record, updated 2026-11-06. Historical entries are archived
 in docs/archive/project-history-1.md and project-history-2.md; their old pending
 statements are superseded by this file. Scope: docs/scope/scope-final.md.
@@ -18,7 +30,7 @@ Only Supabase project knmqlkhnfumeuxgnkuez (CloseFuture, ap-south-1) is allowed.
 MCP is the only schema/write administration path. All changes are saved in
 supabase/migrations. No service-role key is used by the running app.
 
-All ten public tables enable and force RLS. Raw workflow/history writes are
+All eleven public tables enable and force RLS. Raw workflow/history writes are
 blocked, including for Admins. User writes go through validated RPCs. Anonymous
 author identity is stripped by database read projections before reaching Members.
 JWT app_metadata.role comes from the enabled custom_access_token_hook; role
@@ -29,6 +41,7 @@ review history. Those audit snapshots precede the current integration fixes.
 ## Tables and Storage
 
 - profiles: Auth-linked employee name, exact-domain email and stored global role.
+- idea_chat_messages: permanent private per-user/idea chat, server-authorized replies.
 - ideas: content, status, scores/quadrant, owner/date, private demo path/link/outcome.
 - idea_private_details: protected submitter identity.
 - idea_votes and idea_followers: unique user/idea engagement.
@@ -396,3 +409,28 @@ docs/dashboard-interactions.md. Supersedes older six-column/placeholder decision
 ## Release and Pencil sync — 2026-11-06
 User authorized test.pen synchronization, GitHub push and Vercel production
 redeployment completed. Live QA and release record: docs/release-2026-11-06.md.
+
+## Idea AI chat — implementation 2026-11-06
+
+Applied migration 20261106095150_private_idea_ai_chat via MCP to locked project
+knmqlkhnfumeuxgnkuez. idea_chat_messages has forced RLS, caller-only reads gated
+by current idea visibility and no direct writes. get_idea_chat uses keyset pages;
+begin_idea_chat/finish_idea_chat validate session, visibility and a Vault-held
+server secret. Writes are idempotent with per-user rate limits and leased retries.
+Ask AI is implemented in idea details with private persisted history. Google
+Flash-Lite is pinned with no fallback; activation requires an AI Studio API key
+and explicit confirmation that its project has billing disabled. No Google key
+was present during initial implementation. Verification is in progress.
+
+Chat verification: build/lint/typecheck and 34 unit tests pass. Expanded rollback
+SQL passes draft privacy, Admin cross-user isolation, direct-write denial, invalid
+server secret, forged lease, concurrent requests, idempotent completion, failed
+retry/hourly cap, older-page cursor isolation and missing identity. History now
+uses INVOKER in migration 20261106095709_idea_chat_invoker_history.
+Real desktop/mobile login and private-history GET passed. Browser reply/reopen
+states used mocked provider responses; screenshots inspected at 1440x1000 and
+390x844, with no page errors/overflow. Browser plugin unavailable, so existing
+Playwright/Edge used. Temporary QA draft deleted; rollback SQL retained no data.
+No live Google response was tested: GEMINI_API_KEY and free-tier confirmation
+are absent. Configure hosting variables and redeploy before hosted availability.
+No commit, push or deployment performed.

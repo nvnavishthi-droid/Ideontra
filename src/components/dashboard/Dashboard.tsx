@@ -284,6 +284,7 @@ export function Dashboard({ user, data, review, overdue, loading, loadError, onR
           <IdeaDetail
             key={selected.id}
             idea={selected}
+            userId={user.id}
             role={filters.role}
             onAction={act}
             onClose={close}

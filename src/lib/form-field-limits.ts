@@ -1,5 +1,7 @@
 // form-field-limits.ts — Persisted form caps matching database constraints.
 export const fieldLimits = {
+  chatQuestion: 4000,
+  chatAnswer: 16000,
   title: 100,
   name: 100,
   email: 254,

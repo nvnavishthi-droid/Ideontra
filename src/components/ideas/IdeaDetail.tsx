@@ -8,6 +8,7 @@ import { Icon } from "@/components/icons/Icon";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { DetailSkeleton } from "@/components/shared/ContentSkeletons";
 import { MutationFeedback } from "@/components/shared/MutationFeedback";
+import { IdeaChat } from "./IdeaChat";
 import { Discussion } from "./Discussion";
 import { ExecutionDetails, HistoryDetails } from "./DetailSections";
 import { readDetail, engageIdea } from "@/lib/api/ideas";
@@ -18,11 +19,13 @@ import type { Idea, IdeaAction, Role } from "@/types/idea";
 export function IdeaDetail({
   idea: initial,
   role,
+  userId,
   onAction,
   onClose,
 }: {
   idea: Idea;
   role: Role;
+  userId: string;
   onAction: (idea: Idea, action: IdeaAction) => void;
   onClose: () => void;
 }) {
@@ -65,7 +68,7 @@ export function IdeaDetail({
         role="tablist"
         aria-label="Idea detail sections"
       >
-        {["Overview", "Discussion", "Execution", "History"].map((section) => (
+        {["Overview", "Discussion", "Execution", "History", "Ask AI"].map((section) => (
           <Button
             key={section}
             role="tab"
@@ -186,6 +189,7 @@ export function IdeaDetail({
           <ExecutionDetails data={data} onDemo={() => onAction(idea, "demo")} />
         )}
         {tab === "History" && <HistoryDetails data={data} />}
+        {tab === "Ask AI" && <IdeaChat key={`${userId}-${idea.id}`} ideaId={idea.id} userId={userId} />}
       </div>
       <div className="flex flex-wrap justify-end gap-3 border-t pt-4">
         <Button variant="outline" onClick={onClose}>
