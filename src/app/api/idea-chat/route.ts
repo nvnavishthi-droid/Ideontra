@@ -7,6 +7,9 @@ const headers = { "Cache-Control": "private, no-store", Vary: "Cookie" };
 function failure(error: unknown) {
   const message = error instanceof Error ? error.message : "Chat is unavailable. Please retry.";
   const allowed = /^(Please sign in|Idea unavailable|AI chat setup|Google|Chat limit|A reply is already|The question is saved|Request expired|Chat provider)/;
+  // Log unexpected causes server-side only (message text, never secrets or request bodies).
+  if (!(error instanceof ZodError) && !allowed.test(message))
+    console.error("[idea-chat] unexpected error:", error instanceof Error ? `${error.name}: ${error.message}` : String(error));
   return Response.json({ error: error instanceof ZodError ? "Invalid chat request." :
     allowed.test(message) ? message : "Chat is unavailable. Please retry." },
   { status: message.startsWith("Please sign in") ? 401 : 400, headers });

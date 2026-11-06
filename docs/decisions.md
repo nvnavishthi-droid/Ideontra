@@ -433,3 +433,11 @@ model to gemini-3.5-flash-lite; it is still Flash-Lite with no paid fallback, an
 test call with the configured key returned STOP in the existing response shape.
 Alternative: gemini-3.5-flash, rejected because it uses more quota. Reversible by
 changing CHAT_MODEL in chat-provider.ts.
+
+## 2026-11-06 — Server-side logging for unexpected chat errors
+
+The chat route showed "Chat is unavailable" for every unexpected error without
+logging the cause, so production failures were invisible in Vercel logs. It now
+logs the error name and message with console.error on the server only. Users
+still see the generic message; request bodies, secrets and provider payloads are
+never logged. Reversible by removing the one log line in route.ts.
